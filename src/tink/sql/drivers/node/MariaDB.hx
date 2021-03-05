@@ -13,7 +13,6 @@ import tink.sql.Types;
 import tink.sql.format.Sanitizer;
 import tink.streams.Stream;
 import tink.sql.format.MySqlFormatter;
-import tink.sql.expr.ExprTyper;
 import tink.sql.parse.ResultParser;
 
 import #if haxe3 js.lib.Error #else js.Error #end as JsError;
@@ -71,10 +70,10 @@ class MariaDBConnection<Db:DatabaseInfo> implements Connection<Db> implements Sa
     return if (Std.is(v, Date))
       'FROM_UNIXTIME(${(v:Date).getTime()/1000})';
     else
-      NativeDriver.escape(if(Std.is(v, Bytes)) Buffer.hxFromBytes(v) else v);
+      pool.escape(if(Std.is(v, Bytes)) Buffer.hxFromBytes(v) else v);
 
   public function ident(s:String):String
-    return NativeDriver.escapeId(s);
+    return pool.escapeId(s);
 
   public function getFormatter()
     return formatter;
@@ -175,8 +174,8 @@ class MariaDBConnection<Db:DatabaseInfo> implements Connection<Db> implements Sa
 
 @:jsRequire("mariadb")
 private extern class NativeDriver {
-  static function escape(value:Any):String;
-  static function escapeId(ident:String):String;
+  // static function escape(value:Any):String;
+  // static function escapeId(ident:String):String;
   static function createPool(config:Config):NativeConnectionPool;
 }
 
@@ -195,14 +194,20 @@ private typedef QueryOptions = {
 
 private extern class NativeConnectionPool {
   function getConnection(cb:JsError->NativeConnection->Void):Void;
+  function escape(value:Any):String;
+  function escapeId(value:Any):String;
 }
+
 private extern class NativeConnection {
   @:overload(function (q: QueryOptions, cb:JsError->Dynamic->Void):Void {})
   function query<Row>(q: QueryOptions):NativeQuery<Row>;
   function pause():Void;
   function resume():Void;
   function release():Void;
+  // function escape(value:Any):String;
+  // function escapeId(value:Any):String;
 }
+
 private extern class NativeQuery<Row> extends EventEmitter<NativeQuery<Row>> {
   function stream(?opt:{?highWaterMark:Int}):NativeStream;
 }

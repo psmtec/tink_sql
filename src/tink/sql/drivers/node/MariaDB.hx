@@ -20,17 +20,17 @@ import #if haxe3 js.lib.Error #else js.Error #end as JsError;
 
 using tink.CoreApi;
 
-typedef MySqlNodeSettings = {
+typedef MariaDBNodeSettings = {
   > MySqlSettings,
   ?connectionLimit:Int,
   ?ssl:EitherType<String, SecureContextOptions>,
 }
 
-class MySql implements Driver {
+class MariaDB implements Driver {
 
   public var type(default, null):Driver.DriverType = MySql;
 
-  var settings:MySqlNodeSettings;
+  var settings:MariaDBNodeSettings;
 
   public function new(settings) {
     this.settings = settings;
@@ -49,11 +49,11 @@ class MySql implements Driver {
       ssl: settings.ssl,
     });
 
-    return new MySqlConnection(info, pool);
+    return new MariaDBConnection(info, pool);
   }
 }
 
-class MySqlConnection<Db:DatabaseInfo> implements Connection<Db> implements Sanitizer {
+class MariaDBConnection<Db:DatabaseInfo> implements Connection<Db> implements Sanitizer {
 
   var pool:NativeConnectionPool;
   var db:Db;
@@ -173,7 +173,7 @@ class MySqlConnection<Db:DatabaseInfo> implements Connection<Db> implements Sani
 
 }
 
-@:jsRequire("mysql")
+@:jsRequire("mariadb")
 private extern class NativeDriver {
   static function escape(value:Any):String;
   static function escapeId(ident:String):String;
